@@ -33,7 +33,7 @@ Standar keamanan yang digunakan mengacu pada:
 ## 2. Network Hardening
 
 ### 2.1 Topologi Jaringan  
-![Topologi Jaringan](assets/01-topology.png)
+![Topologi Jaringan](assets/Topology.png)
 
 **Deskripsi Topologi**:  
 Topologi jaringan terdiri dari satu router sebagai gateway utama yang menghubungkan tiga sistem dalam satu subnet melalui switch (LAN), yaitu:
