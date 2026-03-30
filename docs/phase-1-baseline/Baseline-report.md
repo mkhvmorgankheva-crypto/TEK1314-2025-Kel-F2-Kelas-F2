@@ -14,8 +14,6 @@ Tujuan dari implementasi hardening pada infrastruktur lab ini adalah untuk menin
 - **Network Subnet**: 192.168.70.0/24
 - **Jumlah VM**: 3 sistem
 - **Skenario**: DNS Defense System
-- **Attack Type**: DNS Spoofing & DNS Tunneling
-- **Service**: DNS Server (Port 53 TCP/UDP)
 
 ### 1.3 Standar Keamanan
 Standar keamanan yang digunakan meliputi:
@@ -33,7 +31,7 @@ Standar keamanan yang digunakan meliputi:
 
 **Deskripsi Topologi**:
 - Attacker (192.168.70.100) sebagai sumber traffic
-- DNS Server (192.168.70.10) sebagai target layanan DNS
+- Target (192.168.70.10) sebagai target layanan DNS
 - Security Onion (192.168.70.50) sebagai monitoring
 - Semua sistem berada dalam satu subnet dan saling terhubung melalui jaringan internal
 
@@ -50,18 +48,11 @@ Standar keamanan yang digunakan meliputi:
 sudo ufw status verbose
 ```
 
-Contoh:
-```bash
-53/tcp ALLOW
-53/udp ALLOW
-22/tcp ALLOW
-```
-
 **Screenshot**:
 ![Firewall Rules - Server](assets/IP Address Target.jpeg)
 
 **Penjelasan**:
-- Port 53 dibuka untuk layanan DNS
+- 
 - Port 22 dibuka untuk remote access
 - Port lainnya diblokir untuk keamanan
 
@@ -76,24 +67,24 @@ Contoh:
 ---
 
 #### 2.2.3 Attacker Machine (192.168.70.100)
-**Isolasi Network**: Host-Only Adapter / Internal Network
+**Isolasi Network**: Internal Network
 
 ---
 
 ### 2.3 Segmentasi Jaringan
 Segmentasi dilakukan berdasarkan fungsi:
 - Client (Attacker)
-- Server (DNS)
+- Server (Target)
 - Monitoring (SIEM)
 
 ---
 
 ## 3. System Hardening
 
-### 3.1 DNS Server (192.168.70.10)
+### 3.1 Target (192.168.70.10)
 
 #### 3.1.1 Identitas Sistem
-- **Hostname**: SRV-DNS-KEL07F
+- **Hostname**: SRV-WEB-KEL07F
 - **IP Address**: 192.168.70.10
 - **OS**: Ubuntu Server
 
@@ -109,7 +100,7 @@ ip a
 
 #### 3.1.2 Layanan yang Dinonaktifkan
 ```bash
-systemctl list-unit-files --state=disabled
+systemctl list-unit-files
 ```
 
 **Alasan**:
@@ -117,39 +108,9 @@ Menonaktifkan layanan yang tidak diperlukan untuk mengurangi attack surface.
 
 ---
 
-#### 3.1.3 Konfigurasi User & Privilege
-- Root login: Disabled
-- User menggunakan sudo privilege
-- Password policy diterapkan
-
----
-
-#### 3.1.4 Konfigurasi DNS (Bind9 / Unbound)
-**File Konfigurasi**: /etc/bind/named.conf.local
-
-```bash
-zone "lab.local" {
-    type master;
-    file "/etc/bind/db.lab";
-};
-```
-
-**Penjelasan**:
-DNS digunakan untuk resolusi domain internal dan masih dalam kondisi baseline (belum di-hardening).
-
----
-
-#### 3.1.5 Security Updates
-```bash
-apt list --upgradable
-```
-
----
-
 ### 3.2 Security Onion (192.168.70.50)
 
 #### 3.2.1 Identitas Sistem
-- **Hostname**: SO-KEL07F
 - **IP Address**: 192.168.70.50
 - **Management Interface**: eth0
 - **Monitoring Interface**: eth1
@@ -165,20 +126,13 @@ apt list --upgradable
 
 ---
 
-### 3.3 Attacker Machine (192.168.70.100)
+### 3.3 Attacker (192.168.70.100)
 
 #### 3.3.1 Identitas Sistem
-- **Hostname**: ATTACK-KEL07F
 - **IP Address**: 192.168.70.100
 
 ![IP Attacker](assets/IP Address Attacker.jpeg)
 
-**Tools Installed**:
-- nslookup
-- dig
-- DNS tools
-
----
 
 ## 4. Bukti Logging - Minggu ke-5
 
@@ -217,37 +171,15 @@ Security Onion berhasil merekam traffic ICMP sehingga sistem monitoring berjalan
 
 ---
 
-## 5. Checklist Hardening (Before Attack)
+## 5. Kesimpulan
 
-### 5.1 Network Hardening
-- [ ] Firewall dikonfigurasi
-- [ ] Port 53 dibuka
-- [ ] Monitoring interface aktif
-
-### 5.2 System Hardening
-- [ ] Layanan tidak perlu dinonaktifkan
-- [ ] DNS server berjalan
-- [ ] User privilege dikonfigurasi
-
-### 5.3 Identitas & Standar
-- [ ] IP Address sesuai 192.168.70.x
-- [ ] Hostname sesuai format
-
-### 5.4 Logging & Monitoring
-- [ ] Security Onion aktif
-- [ ] Traffic ICMP berhasil direkam
-
----
-
-## 6. Kesimpulan
-
-### 6.1 Ringkasan Implementasi
+### 5.1 Ringkasan Implementasi
 Sistem DNS Defense berhasil dibangun dengan komponen DNS Server dan Security Onion sebagai sistem monitoring.
 
-### 6.2 Kesiapan Sistem
+### 5.2 Kesiapan Sistem
 Sistem siap untuk tahap berikutnya yaitu simulasi DNS Spoofing dan DNS Tunneling.
 
-### 6.3 Kendala yang Dihadapi
+### 5.3 Kendala yang Dihadapi
 Kendala yang dihadapi meliputi konfigurasi network VM dan error pada netplan, namun dapat diselesaikan dengan penyesuaian konfigurasi interface jaringan.
 
 ---
@@ -263,13 +195,8 @@ Kendala yang dihadapi meliputi konfigurasi network VM dan error pada netplan, na
 - hostname.jpeg
 - logging-check-icmp.jpeg
 
-### B. File Konfigurasi
-- /etc/bind/named.conf.local
-- /etc/bind/db.lab
-
-### C. Command Reference
+### B. Command Reference
 - ping
-- nslookup
 - ufw
 - systemctl
 - tcpdump
@@ -278,8 +205,6 @@ Kendala yang dihadapi meliputi konfigurasi network VM dan error pada netplan, na
 
 **Disusun oleh**  
 Kelompok 7 - Kelas F2  
-
-[Nama Anggota]
 
 **Tanggal**  
 31/03/2026
